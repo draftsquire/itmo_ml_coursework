@@ -1,7 +1,7 @@
 """
 @author: Ivan K.
 
-@brief: File contating functions with different conrols methods
+@brief: File contating functions with RL conrol functions
  for mecanum-wheeled robot
 
 """
@@ -433,109 +433,30 @@ def ctrl_bodyCTC(t, model, data, trajectory, init_pos=[0,0,0], integrator=None):
     return np.asarray(tau_wheels)
 
 
-
-############################# AITSM
-def ctrl_AITSM(t, model, data, trajectory, init_pos):
-    """
-    AITSM control function
+def OGRF(max_coordinate, start_point : tuple, target_point : tuple, current_coord : tuple, eo_norm, r, step, c):
+    """Orientation Gain Reward Function
 
     Args:
-        t (float): timestamp, seconds(?)
-        data (mjData): simulation data
-        trajectory (fctn(t, init_pos)) - trajectory function
-        init_pos - initial position 3x1 vector
+        max_coordinate (_type_): maximum coordinate
+        start_point (tuple): start point coordinate
+        target_point (tuple): target point coordinate
+        current_coord (tuple): instantaneous robot’s coordinate
+        eo_norm (_type_): normalized orientation error
+        r (_type_): environment boundary radius
+        step (_type_): number of performed steps
+        c (_type_): the orientation error constraint 
+
     Returns:
-        ndArray: Inputs for each wheel (u(t))
+        T: A Boolean indicating whether an episode is
+    finished
+        R_t: Ttotal reward obtained by the agent
     """
+    T = False
+    R_t = 0
 
-    #TRAJECTORIES HERE
-    X_g_des = trajectory(t, init_pos)
-    #desired position vector in 
-    if not hasattr(ctrl_AITSM, "ws_integrator"):
-        ctrl_AITSM.ws_integrator = Integrator3D(0, np.array([5, 0, 0]))  # it doesn't exist yet, so initialize it
-    
-    if not hasattr(ctrl_AITSM, "omega_derivative"):
-        ctrl_AITSM.omega_derivative = DerivativeCalculator()  # it doesn't exist yet, so initialize it   
-
-    if not hasattr(ctrl_AITSM, "error_derivative"):
-        ctrl_AITSM.error_derivative = DerivativeCalculator(np.array([0.0, 0.0, 0.0]))  # it doesn't exist yet, so initialize it       
-
-    if not hasattr(ctrl_AITSM, "lambdas_1_integrator"):
-        ctrl_AITSM.lambdas_1_integrator = Integrator3D(0, np.array([1.0, 1.0, 1.0]))  # it doesn't exist yet, so initialize it       
-    if not hasattr(ctrl_AITSM, "lambdas_2_integrator"):
-        ctrl_AITSM.lambdas_2_integrator = Integrator3D(0, np.array([1.0, 1.0, 1.0]))  # it doesn't exist yet, so initialize it        
-
-    if not hasattr(ctrl_AITSM, "G_derivative"):
-        ctrl_AITSM.G_derivative = DerivativeCalculator(np.array([0.0, 0.0, 0.0]))
-    if not hasattr(ctrl_AITSM, "G_dot_derivative"):
-        ctrl_AITSM.G_dot_derivative = DerivativeCalculator(np.array([0.0, 0.0, 0.0])) 
-
-    # X_g_des = np.array([x_des, y_des, theta_des])
-
-
-    v_x_b_act, v_y_b_act = data.sensordata[0], data.sensordata[1]
-    #Robot's rotation speed
-    omega_z = data.sensordata[5]
-
-    x_axis_data = np.array([data.sensordata[6], data.sensordata[7], data.sensordata[8]])
-    phi = calculate_phi_from_loc_x_axis(x_axis_data);
-
-    #Speeds in local frame
-    X_b_dot_act = np.array([v_x_b_act, v_y_b_act, omega_z])
-    
-    # X_g_act = ctrl_pid.ws_integrator.update(t, X_g_dot_act)
-    X_g_act = np.array([data.sensordata[9], data.sensordata[10], phi])
-    
-    # X_g_des и X_g_act разных типов?
-    error = X_g_des - X_g_act
-    # Wrap error to the range [-pi, pi]
-    error[2] = (error[2] + np.pi) % (2 * np.pi) - np.pi
+    x, y = current_coord
+    x_s, t_s = start_point
+    x_t, y_t = target_point
     
 
-    maxtorque = 1000
-    ##############################
-    q = 3 #from article
-    p = 5 #from article
-    d_max = 0.001 # max uncertanties value
-    k_1 = np.array([8*d_max, 8*d_max, 4*d_max/(d_x+d_y)])
-    k_2 = 8
-    epsilon_1 = 5
-    epsilon_2 = 10
-    b_0 = 0.000 # viscous friction
-    G_d_dot = ctrl_AITSM.G_derivative.update(t, X_g_des)
-    G_d_ddot = ctrl_AITSM.G_dot_derivative.update(t, G_d_dot)
-
-    error_dot = ctrl_AITSM.error_derivative.update(t, error)
-    
-    if not hasattr(ctrl_pid, "error_i_integrator"):
-        ctrl_AITSM.error_i_integrator = Integrator3D(0, (error_dot + ctrl_AITSM.lambdas_1_integrator.current_value * error) / ctrl_AITSM.lambdas_2_integrator.current_value)  # it doesn't exist yet, so initialize it    
-
-    error_i_dot = np.sign(error) * np.pow(np.abs(error), q / p)
-    error_i = ctrl_AITSM.error_i_integrator.update(t, error_i_dot)
-    s = error_dot + ctrl_AITSM.lambdas_1_integrator.current_value * error + ctrl_AITSM.lambdas_2_integrator.current_value *error_i
-    lambdas_1_dot = -s * epsilon_1 * error
-    lambdas_2_dot = -s * epsilon_2  * error_i[0]
-    lambdas_1 = ctrl_AITSM.lambdas_1_integrator.update(t, lambdas_1_dot)
-    lambdas_2 = ctrl_AITSM.lambdas_2_integrator.update(t, lambdas_2_dot)
-    J_0 = 0.01
-    J_0_half = J_0 / 2
-    J_mat = np.array([[0, J_0_half, 0, J_0_half],
-                     [-J_0_half, 0 , -J_0_half, 0],
-                     [0, J_0_half, 0, J_0_half],
-                     [-J_0_half, 0 , -J_0_half, 0]])
-    omega_z_dot = ctrl_AITSM.omega_derivative.update(t, omega_z)
-    
-    u_eq = (4*J_0/R) * np.dot(np.linalg.pinv(h(omega_z)), (G_d_ddot - lambdas_1 * error_dot - lambdas_2 * error_i))
-    u_re = - np.dot(np.linalg.pinv(h(omega_z)), (k_1 *np.sign(s) + k_2*s))
-
-   
-    u = u_eq + u_re
-    theta_dot = 1 * np.dot(np.linalg.matrix_transpose(N), X_b_dot_act) / R
-    v = - np.dot(J_mat, theta_dot) * omega_z_dot  + b_0 * theta_dot + u
-
-
-    u_sat = saturate_control(v, maxtorque)
-    # print("error:%2f P:%.2f I:%.4f  D:%.4f Mz: %.2f" %
-    #        (error_ws[2], proportional[2], integral[2], differential[2], Mz))
-
-    return -u_sat
+    return T, R_t

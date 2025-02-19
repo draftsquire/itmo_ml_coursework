@@ -126,6 +126,110 @@ def create_wheel(wtype, R, hub_thickness, n_roller, roller_angle=np.pi/4, hub_na
                             )
         return hub, wspec
 
+def generate_scene_empty(init_pos=[0,0,0], n_rollers=8, torq_max=0):
+    """
+    Generate scene with mecanum platform and no obstracles.
+
+    Args:
+        init_pos: [x, y, z] coordinates for initial robot position. 
+    Returns:
+        Mujoco mjSpec object
+
+    """
+    spec = mujoco.MjSpec()
+
+    # spec.option.timestep = 0.05
+    # getattr(spec.visual, 'global').azimuth = 45
+    # getattr(spec.visual, 'global').elevation = 0
+    spec.visual.scale.jointlength = 1.6
+    spec.visual.scale.jointwidth = 0.12
+
+    # does not work in mujoco 3.2.6, fixed in an unreleased version
+    # j_color = [47 / 255, 142 / 255, 189 / 255, 1]
+    # mjcf_model.visual.rgba.joint = j_color
+    # spec.visual.rgba.constraint = j_color
+
+    spec.stat.extent = 0.6
+    spec.stat.center = [0,0,.3]
+
+    spec.add_texture(name="//unnamed_texture_0", type=mujoco.mjtTexture.mjTEXTURE_SKYBOX, 
+                     builtin=mujoco.mjtBuiltin.mjBUILTIN_FLAT, rgb1=[1, 1, 1], rgb2=[1, 1, 1], 
+                     width=512, height=3072)
+    tex = spec.add_texture(name="groundplane", type=mujoco.mjtTexture.mjTEXTURE_2D, 
+                     builtin=mujoco.mjtBuiltin.mjBUILTIN_CHECKER, rgb1=[0.2, 0.3, 0.4], 
+                     rgb2=[0.1, 0.2, 0.3], mark=mujoco.mjtMark.mjMARK_EDGE, markrgb=[0.8, 0.8, 0.8], width=300, height=300)
+    spec.add_material(name='groundplane', texrepeat=[5, 5], reflectance=.2, texuniform=True).textures[mujoco.mjtTextureRole.mjTEXROLE_RGB] = 'groundplane'
+
+    spec.worldbody.add_light(name="//unnamed_light_0", directional=True, castshadow=False, pos=[0, 0, 3], dir=[0, 0.8, -1])
+
+    spec.worldbody.add_geom(name="floor", type=mujoco.mjtGeom.mjGEOM_PLANE, condim=1, size=[0, 0, 0.125], material="groundplane")#, contype="1" conaffinity="0")
+
+    mesh_path = "meshes"
+
+    wheel_filename = 'mecanum.stl'
+    mecanum1_visual = spec.add_mesh(name='mesh1', file=join(mesh_path,wheel_filename), scale=[.78,.78,.78])
+    mecanum2_visual = spec.add_mesh(name='mesh2', file=join(mesh_path,wheel_filename), scale=[.78,.78,-.78])
+
+    l, w, h = .4, .2, .05
+    wR = 0.04
+    hub_thickness = wR
+    # n_roll = 8
+
+    box = spec.worldbody.add_body(name="box", pos=[init_pos[0],init_pos[1], 0 + wR+h/2])
+    box.add_joint(name="slidex", axis=[1,0,0], type=mujoco.mjtJoint.mjJNT_SLIDE)
+    box.add_joint(name="slidey", axis=[0,1,0], type=mujoco.mjtJoint.mjJNT_SLIDE)
+    box.add_joint(name="slidez", axis=[0,0,1], type=mujoco.mjtJoint.mjJNT_SLIDE)
+    box.add_joint(name="phi", axis=[0,0,1])
+    # box.add_freejoint()
+    box_color = [.2,.4,.2,1]
+    box.add_geom(size=[w/2,l/2,h/2], type=mujoco.mjtGeom.mjGEOM_BOX, rgba=box_color)
+    box.add_site(name='box_center')
+
+    dx = w/2 + hub_thickness/2
+    dy = .8*l/2
+    dz = -h/2
+
+    site1 = box.add_site(pos=[dx,dy,dz], euler=[0,0,-90]) # front right
+    site2 = box.add_site(pos=[-dx,dy,dz], euler=[0,0,-90]) # front left
+    site3 = box.add_site(pos=[-dx,-dy,dz], euler=[0,0,-90]) # rear left
+    site4 = box.add_site(pos=[dx,-dy,dz], euler=[0,0,-90]) # rear right
+
+    hub_name = 'hub'
+    wheel_body1, _ = create_wheel(0, wR, hub_thickness, n_rollers, hub_name=hub_name)
+    wheel_body2, _ = create_wheel(1, wR, hub_thickness, n_rollers, hub_name=hub_name)
+    w1 = site1.attach(wheel_body1, 'w1-', '')
+    w2 = site2.attach(wheel_body2, 'w2-', '')
+    w3 = site3.attach(wheel_body1, 'w3-', '')
+    w4 = site4.attach(wheel_body2, 'w4-', '')
+
+    spec.compiler.inertiagrouprange = [0,1]
+
+    wheel_color = [.2,.2,.2,1]
+
+    w1.add_geom(type=mujoco.mjtGeom.mjGEOM_MESH, meshname=mecanum1_visual.name, euler=[90,0,0], group=2, rgba=wheel_color)
+    w2.add_geom(type=mujoco.mjtGeom.mjGEOM_MESH, meshname=mecanum2_visual.name, euler=[90,0,0], group=2, rgba=wheel_color)
+    w3.add_geom(type=mujoco.mjtGeom.mjGEOM_MESH, meshname=mecanum1_visual.name, euler=[90,0,0], group=2, rgba=wheel_color)
+    w4.add_geom(type=mujoco.mjtGeom.mjGEOM_MESH, meshname=mecanum2_visual.name, euler=[90,0,0], group=2, rgba=wheel_color)
+
+    disable_parts_contact(spec, [(box, w1, *w1.bodies),
+                                 (box, w2, *w2.bodies),
+                                 (box, w3, *w3.bodies),
+                                 (box, w4, *w4.bodies),
+                                 (w1, spec.worldbody),
+                                 (w2, spec.worldbody),
+                                 (w3, spec.worldbody),
+                                 (w4, spec.worldbody)])
+    # Collision is enabled only for pairs world-rollers(spheres) and world-chassie(box). 
+    # Hub and visual wheel are disabled
+
+    input_saturation = [-abs(torq_max),abs(torq_max)] # Nm
+    for i in range(4):
+        spec.add_actuator(name=f'torque{i+1}', target=f'w{i+1}-'+hub_name, trntype=mujoco.mjtTrn.mjTRN_JOINT,
+                          ctrllimited=bool(abs(torq_max)), ctrlrange=input_saturation
+                          )
+
+    return spec
+
 def generate_scene(init_pos=[0,0,0], n_rollers=8, torq_max=0):
     """
     Generate scene with mecanum platform.
