@@ -12,6 +12,25 @@ from gymnasium.wrappers import RecordEpisodeStatistics, RecordVideo
 from gymnasium.envs.registration import register
 
 GENERATE_SCENE = True
+
+def generate_coordinates(n, init_pos=(0, 0), x_range=(-1, 1), y_range=(-1, 1)):
+    """Generates N random (x, y) coordinate pairs within specified ranges.
+
+    Args:
+        n (int): Number of coordinate pairs.
+        init_pos (tuple): initial coordinates
+        x_range (tuple): Range (min, max) for x values.
+        y_range (tuple): Range (min, max) for y values.
+
+    Returns:
+        numpy.ndarray: Array of shape (N, 2) containing (x, y) pairs.
+    """
+    x_values = init_pos[0] + np.random.uniform(x_range[0], x_range[1], n)
+    y_values = init_pos[1] + np.random.uniform(y_range[0], y_range[1], n)
+
+    coordinates = np.column_stack((x_values, y_values))  # Combine x and y into pairs
+    return coordinates
+
 if __name__ == '__main__':
     if GENERATE_SCENE:
         spec = generate_scene_empty([0, 0, 0])
@@ -34,14 +53,16 @@ if __name__ == '__main__':
     }
 
     STEPS_MAX = 150
+    EPISODES_N = 10000
     register(
         id="Mecanum-v0",
         entry_point="gym_env_mecanum:MecanumEnv",
         max_episode_steps=STEPS_MAX,
         reward_threshold=1.76*300,
     )
-
-    env = gym.make('Mecanum-v0', camera_config=CAMERA_CONFIG, render_mode="rgb_array", width=1280, height=720)
+    env_boudary_radius = 2.
+    coords = generate_coordinates(EPISODES_N)
+    env = gym.make('Mecanum-v0',coordinates=coords, camera_config=CAMERA_CONFIG, environment_boundary_radius=env_boudary_radius, render_mode="rgb_array", width=1280, height=720)
     env = RecordVideo(env, video_folder="mecanum-platform", name_prefix="eval",
                   episode_trigger=lambda x: True)
     observation, info = env.reset()
@@ -76,19 +97,40 @@ if __name__ == '__main__':
     action_space[:, [2, 3]] = action_space[:, [3, 2]]
     action_space = -1. * action_space 
     # for action in action_space[-1:] :
-    action = action_space[14] # x positive, low speed
-    print(action)
+    # for action in action_space:
+    #     episode_over = False
+    #     env.reset()
+    #     i = 0
+    #     print(action)
     i = 0
-    episode_over = False
-    env.reset()
-    while not episode_over:
-        # action = env.action_space.sample()  # agent policy that uses the observation and info
-        # action = action_space[np.random.choice(action_space.shape[0])]
-        # action = -1. * np.array([-0.5, -0.5, -0.5, -0.5])  # y positive, low speed
-        observation, reward, terminated, truncated, info = env.step(action)
-        # print(observation)
-        i+=1
-        episode_over = (i >= STEPS_MAX)
-        
+    action = action_space[-1] *.5 # CW rotation, low speed
 
-    env.close()
+    print(coords)
+    plt.figure(figsize=(8, 6))  # Set figure size
+    plt.scatter(coords[:, 0], coords[:, 1], c='blue', marker='o', alpha=0.7, edgecolors='black')
+    # Add the circle
+    circle = plt.Circle((0,0), env_boudary_radius, color='red', fill=False, linewidth=2, linestyle='dashed')
+    plt.gca().add_patch(circle)  # Add circle to the current plot
+
+    # Labels and title
+    plt.xlabel("X Coordinate")
+    plt.ylabel("Y Coordinate")
+    plt.title("Scatter Plot of Random (x, y) Coordinates")
+    plt.grid(True)  # Show grid
+    plt.axhline(0, color='black', linewidth=0.8)  # X-axis reference line
+    plt.axvline(0, color='black', linewidth=0.8)  # Y-axis reference line
+
+
+
+# Show plot
+    plt.show()
+    # env.reset()
+    # while not episode_over:
+    #     # action = env.action_space.sample()  # agent policy that uses the observation and info
+    #     # action = action_space[np.random.choice(action_space.shape[0])]
+    #     # action = -1. * np.array([-0.5, -0.5, -0.5, -0.5])  # y positive, low speed
+    #     observation, reward, terminated, truncated, info = env.step(action)
+    #     print(observation[-1]) # Anglem, deg
+    #     i+=1
+    #     episode_over = (i >= STEPS_MAX)
+    # env.close()
