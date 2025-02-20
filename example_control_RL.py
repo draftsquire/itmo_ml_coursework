@@ -96,41 +96,67 @@ if __name__ == '__main__':
     #  but in our model it's vice-versa 
     action_space[:, [2, 3]] = action_space[:, [3, 2]]
     action_space = -1. * action_space 
-    # for action in action_space[-1:] :
-    # for action in action_space:
-    #     episode_over = False
-    #     env.reset()
-    #     i = 0
-    #     print(action)
+
     i = 0
     action = action_space[-1] *.5 # CW rotation, low speed
 
-    print(coords)
-    plt.figure(figsize=(8, 6))  # Set figure size
-    plt.scatter(coords[:, 0], coords[:, 1], c='blue', marker='o', alpha=0.7, edgecolors='black')
-    # Add the circle
-    circle = plt.Circle((0,0), env_boudary_radius, color='red', fill=False, linewidth=2, linestyle='dashed')
-    plt.gca().add_patch(circle)  # Add circle to the current plot
 
-    # Labels and title
-    plt.xlabel("X Coordinate")
-    plt.ylabel("Y Coordinate")
-    plt.title("Scatter Plot of Random (x, y) Coordinates")
-    plt.grid(True)  # Show grid
-    plt.axhline(0, color='black', linewidth=0.8)  # X-axis reference line
-    plt.axvline(0, color='black', linewidth=0.8)  # Y-axis reference line
+    for action in action_space:
+        episode_over = False
+        i = 0
+        print(action)
+        traj = []
+        while not episode_over:
+            # action = env.action_space.sample()  # agent policy that uses the observation and info
+            # action = action_space[np.random.choice(action_space.shape[0])]
+            # action = -1. * np.array([-0.5, -0.5, -0.5, -0.5])  # y positive, low speed
+            observation, reward, terminated, truncated, info = env.step(action)
+            x, y, v_x, v_y, omega_z, x_t, y_t, e_x, e_y, E_dist, e_phi_deg = observation
+            traj.append([x ,y])
+            i+=1
+            episode_over = (i >= STEPS_MAX) or terminated
+        traj = np.array(traj)
+        # Create figure
+        plt.figure(figsize=(8, 6))
+        # Plot trajectory as a connected line
+        plt.plot(traj[:, 0], traj[:, 1], linestyle='-', color='blue', marker='o', markersize=5, alpha=0.7, label="Trajectory")
+        # Highlight the last coordinate
+        plt.scatter(traj[-1, 0], traj[-1, 1], color='green', edgecolors='black', s=100, label="Last Point", zorder=3)
+        # Add the circle
+        circle = plt.Circle((0,0), env_boudary_radius, color='red', fill=False, linewidth=2, linestyle='dashed')
+        plt.gca().add_patch(circle)  # Add circle to the current plot
+        # Labels and title
+        plt.xlabel("X Coordinate")
+        plt.ylabel("Y Coordinate")
+        plt.title("Trajectory Plot with Last Point Highlighted")
+        plt.grid(True)
+        plt.axhline(0, color='black', linewidth=0.8)  # X-axis reference line
+        plt.axvline(0, color='black', linewidth=0.8)  # Y-axis reference line
+        # Set equal aspect ratio to ensure the circle looks correct
+        plt.axis("equal")
+        # Add legend
+        plt.legend()
+        # Show plot
+        plt.show()
+
+        env.reset()
+
+    env.close()
 
 
+    # plt.figure(figsize=(8, 6))  # Set figure size
+    # plt.scatter(coords[:, 0], coords[:, 1], c='blue', marker='o', alpha=0.7, edgecolors='black')
+    # # Add the circle
+    # circle = plt.Circle((0,0), env_boudary_radius, color='red', fill=False, linewidth=2, linestyle='dashed')
+    # plt.gca().add_patch(circle)  # Add circle to the current plot
+    #
+    # # Labels and title
+    # plt.xlabel("X Coordinate")
+    # plt.ylabel("Y Coordinate")
+    # plt.title("Scatter Plot of Random (x, y) Coordinates")
+    # plt.grid(True)  # Show grid
+    # plt.axhline(0, color='black', linewidth=0.8)  # X-axis reference line
+    # plt.axvline(0, color='black', linewidth=0.8)  # Y-axis reference line
 
 # Show plot
     plt.show()
-    # env.reset()
-    # while not episode_over:
-    #     # action = env.action_space.sample()  # agent policy that uses the observation and info
-    #     # action = action_space[np.random.choice(action_space.shape[0])]
-    #     # action = -1. * np.array([-0.5, -0.5, -0.5, -0.5])  # y positive, low speed
-    #     observation, reward, terminated, truncated, info = env.step(action)
-    #     print(observation[-1]) # Anglem, deg
-    #     i+=1
-    #     episode_over = (i >= STEPS_MAX)
-    # env.close()

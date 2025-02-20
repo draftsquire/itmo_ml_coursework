@@ -26,7 +26,7 @@ def calculate_phi_from_loc_x_axis_deg(x_axis):
         x_axis (numpy.ndarray or list): Unit vector from x-axis sensor, [x, y, z]
 
     Returns:
-        float: Rotation between robot's X and global frame X in range [0, 360] degrees.
+        float: Rotation between robot's X and global frame X in range [-180, 180] degrees.
     """
     # Convert to NumPy array if not already
     x_axis = np.array(x_axis, dtype=float)
@@ -36,8 +36,8 @@ def calculate_phi_from_loc_x_axis_deg(x_axis):
 
     # Convert negative angles to positive by adding 360 degrees
     angle_deg = np.degrees(angle_rad)
-    if angle_deg < 0:
-        angle_deg += 360
+    # if angle_deg < 0:
+    #     angle_deg += 360
 
     return angle_deg
 
@@ -48,7 +48,7 @@ def calculate_phi_from_loc_x_axis_rad(x_axis):
         x_axis (numpy.ndarray):  unit vector from x-axis sensor, [x, y, z]
 
     Returns:
-        numpy.ndaray: counter-clockwise rotation between robot's X and global frame X [0; 2pi]
+        numpy.ndaray: counter-clockwise rotation between robot's X and global frame X [-pi; pi]
     """
     # Convert to NumPy array if not already
     
@@ -56,8 +56,8 @@ def calculate_phi_from_loc_x_axis_rad(x_axis):
     # Use atan2 to calculate angle directly
     angle_rad = np.arctan2(x_axis[1], x_axis[0])
     # Convert negative angles to positive by adding 2π
-    if angle_rad < 0:
-        angle_rad += 2 * np.pi
+    # if angle_rad < 0:
+    #     angle_rad += 2 * np.pi
 
     return angle_rad
 
@@ -180,7 +180,7 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
         # Unpack values into separate variables
         x, y, v_x, v_y, omega_z, x_t, y_t, e_x, e_y, E_dist, e_phi_deg = observation
 
-        e_phi_norm = np.abs((e_phi_deg * (180 / np.pi)) / 180)
+        e_phi_norm = np.abs(e_phi_deg / 180)
         r = self._environment_boundary_radius # 2.0 by default
 
         terminated, reward =  self.ogrf(self._x_start, self._y_start, x_t, y_t, x, y, e_phi_norm, r, self._step_n)
