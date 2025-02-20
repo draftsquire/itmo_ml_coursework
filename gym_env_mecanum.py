@@ -140,7 +140,7 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
         observation = np.array([x, y, v_x, v_y, omega_z, x_t, y_t, e_x, e_y, E_dist, e_phi])
         return observation
 
-    def ogrf(self, x_s, y_s, x_t, y_t, x, y, e_phi_norm, r, step, c_phi=0.4, max_steps=10000):
+    def ogrf(self, x_s, y_s, x_t, y_t, x, y, e_phi_norm, r, step, c_phi=0.4):
         """
         Orientational Gain Reward Function
 
@@ -154,7 +154,6 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
         :param r: Environment boundary radius
         :param step: Number of performed steps
         :param c_phi: The orientation error constant
-        :param max_steps: Maximum number of steps
 
         :return: tuple: (T, R_T) - A boolean indicating whether an episode is finished,
          R_T - total reward obtained by the agent
@@ -168,7 +167,7 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
             R_T = (R1 + R2) * (1 - e_phi_norm)
         else:
             T = True
-            steps_left = max_steps - step
+            steps_left = 10000 - step
             R_T = -steps_left
 
         return T, R_T
