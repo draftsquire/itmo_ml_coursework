@@ -6,7 +6,7 @@ import math
 
 from gymnasium import utils
 from gymnasium.envs.mujoco import MujocoEnv
-from gymnasium.spaces import Box
+from gymnasium.spaces import Box, Discrete
 from rtree.index import RT_MVRTree
 
 from scipy.spatial.transform import Rotation
@@ -101,14 +101,16 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
         self._step_n = 0
         self._episode_n = 0
         self._environment_boundary_radius = environment_boundary_radius
-        observation_space = Box(
+        self.observation_space = Box(
                 low=-np.inf, high=np.inf, shape=(11,), dtype=np.float64
             )
+        # self.action_space = Box(low=-1.0, high=1.0, shape=(4,), dtype=np.float32)
+        self.action_space = Discrete(19)
         MujocoEnv.__init__(
             self,
             mecanum_xml,
             4,
-            observation_space=observation_space,
+            observation_space=self.observation_space,
             default_camera_config=self._camera_config,
             **kwargs,
         )
@@ -190,8 +192,9 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
         self._step_n += 1
         if self.render_mode == "human":
             self.render()
+        truncated = False
 
-        return observation, reward, terminated, False, info
+        return observation, reward, terminated, truncated, info
 
     def reset_model(self):
         """
