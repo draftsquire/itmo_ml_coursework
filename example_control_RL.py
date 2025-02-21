@@ -126,9 +126,10 @@ if __name__ == '__main__':
         "elevation": -50.0,
     }
 
-    EPISODES_N = 10000
-    EPISODES_MAX = 10000
-    STEPS_MAX = 15*1000000
+
+    EPISODES_MAX = 15*1000000
+    EPISODES_N = 15*1000000
+    STEPS_MAX = 10000
     register(
         id="Mecanum-v0",
         entry_point="gym_env_mecanum:MecanumEnv",
@@ -179,7 +180,7 @@ if __name__ == '__main__':
 
     # Learning Parameters
     epsilon = 0.9 # gready threashold
-    alpha = 0.01 # learning rate
+    alpha = 5e-5 # learning rate
     gamma = 0.99 # reward discount factor
 
     agent = DQN(n_states, n_actions, hidden_dim=12,alpha=alpha)
@@ -192,28 +193,30 @@ if __name__ == '__main__':
 
     # Loggers
     log_steps_number = np.zeros(EPISODES_MAX)
+    log_episode_rewards = np.zeros(EPISODES_MAX)
     fails_by_cart_pos = 0
     fails_by_pole_angle = 0
     fails_both = 0
 
     # Q-learning
     for i_episode in range(EPISODES_MAX):
+        print("episode #" + str(i_episode))
         state, _info = env.reset()
         # show results
-        if (i_episode + 1) % 10 == 0:
+        if (i_episode + 1) % 1000 == 0:
             plt.figure(1)
             plt.clf()
             plt.plot([0,i_episode], [195, 195], label="threshold")
-            plt.plot(range(0,i_episode), log_steps_number[0:i_episode], label="solution 1")
+            plt.plot(range(0,i_episode), log_episode_rewards[0:i_episode], label="solution 1")
             plt.xlabel('episode')
-            plt.ylabel('episode steps')
+            plt.ylabel('episode reward')
             plt.legend()
             plt.title('epsilon={} alpha={}'.format(epsilon, agent.scheduler.get_last_lr()[0]))
             display.clear_output(wait=True)
             plt.show()
 
-        if (i_episode + 1) % 10 == 0: #10
-            epsilon = epsilon*0.45 #0.85
+        if (i_episode + 1) % 50 == 0: #10
+            epsilon = epsilon*0.95 #0.85
 
         if (i_episode + 1) % 30 == 0: #50
             agent.scheduler.step()
@@ -231,7 +234,7 @@ if __name__ == '__main__':
 
 
             next_state, reward, done, _truncated, info = env.step(action)
-            memory.append((state, action, next_state, reward, done))
+            memory.append((state, action_n, next_state, reward, done))
 
             if done:
                 #update qnetwork
@@ -239,6 +242,7 @@ if __name__ == '__main__':
                 agent.update(state, q_values)
 
                 log_steps_number[i_episode] = t
+                log_episode_rewards[i_episode] = reward
                 break
 
             if len(memory) < replay_size:

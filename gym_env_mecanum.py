@@ -105,7 +105,6 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
                 low=-np.inf, high=np.inf, shape=(11,), dtype=np.float64
             )
         # self.action_space = Box(low=-1.0, high=1.0, shape=(4,), dtype=np.float32)
-        self.action_space = Discrete(19)
         MujocoEnv.__init__(
             self,
             mecanum_xml,
@@ -114,6 +113,7 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
             default_camera_config=self._camera_config,
             **kwargs,
         )
+        self.action_space = Discrete(19)
         # noise_low = -self._reset_noise_scale
         # noise_high = self._reset_noise_scale
         self._x_start = self._coordinates[0][0]
