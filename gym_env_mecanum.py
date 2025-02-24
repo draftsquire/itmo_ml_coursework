@@ -172,7 +172,7 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
         else:
             T = True
             steps_left = 10000 - step
-            R_T = -steps_left * 0.5
+            R_T = -steps_left
 
         return T, R_T
 
@@ -206,21 +206,25 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
         """
         n = len(self._coordinates)
         qpos = self.init_qpos
-        self._x_start = self._coordinates[self._episode_n][0]#X-coordinate
-        self._y_start = self._coordinates[self._episode_n][1]#Y-coordinate
+        if (self._episode_n >= n):
+            coordinates_index = self._episode_n % n
+        else:
+            coordinates_index = self._episode_n
+        
+        self._x_start = self._coordinates[coordinates_index][0]#X-coordinate
+        self._y_start = self._coordinates[coordinates_index][1]#Y-coordinate
         qpos[0] = self._x_start
         qpos[1] = self._y_start
 
         qpos[2] = self.init_qpos[2] # Z-coordinate remains zero (likely)
 
-        self._x_target = self._coordinates[n - 1 - self._episode_n][0]
-        self._y_target = self._coordinates[n - 1 - self._episode_n][1]
+        self._x_target = self._coordinates[n - 1 - coordinates_index][0]
+        self._y_target = self._coordinates[n - 1 - coordinates_index][1]
 
         qvel = self.init_qvel
         self.set_state(qpos, qvel)
         observation = self._get_obs()
         self._step_n = 0
-        # TODO: move to terminated function?
         self._episode_n += 1
         return observation
 
