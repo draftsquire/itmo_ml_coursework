@@ -7,7 +7,6 @@ import math
 from gymnasium import utils
 from gymnasium.envs.mujoco import MujocoEnv
 from gymnasium.spaces import Box, Discrete
-from rtree.index import RT_MVRTree
 
 from scipy.spatial.transform import Rotation
 
@@ -74,7 +73,7 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
             "rgb_array",
             "depth_array",
         ],
-        "render_fps": 125,
+        "render_fps": 500,
     }
 
     def __init__(
@@ -84,6 +83,7 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
         camera_config=DEFAULT_CAMERA_CONFIG,
         reset_noise_scale=1.,
         environment_boundary_radius=3.,
+        frame_skip: int = 1,
         **kwargs,
     ):
         utils.EzPickle.__init__(
@@ -92,6 +92,7 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
             coordinates,
             reset_noise_scale,
             environment_boundary_radius,
+            
             **kwargs,
         )
 
@@ -108,9 +109,10 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
         MujocoEnv.__init__(
             self,
             mecanum_xml,
-            4,
+            frame_skip=frame_skip,
             observation_space=self.observation_space,
             default_camera_config=self._camera_config,
+            
             **kwargs,
         )
         self.action_space = Discrete(19)
@@ -170,7 +172,7 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
         else:
             T = True
             steps_left = 10000 - step
-            R_T = -steps_left
+            R_T = -steps_left * 0.5
 
         return T, R_T
 
