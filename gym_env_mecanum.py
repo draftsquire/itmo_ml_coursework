@@ -79,11 +79,11 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
     def __init__(
         self,
         coordinates, # Used for starting and target points
+        environment_boundary_radius,
         mecanum_xml: str =  os.path.join(os.getcwd(),"mecanum.xml"),
         max_steps=DEFAULT_MAX_STEPS,
         camera_config=DEFAULT_CAMERA_CONFIG,
         reset_noise_scale=1.,
-        environment_boundary_radius=3.,
         frame_skip: int = 1,
         **kwargs,
     ):
@@ -114,7 +114,6 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
             frame_skip=frame_skip,
             observation_space=self.observation_space,
             default_camera_config=self._camera_config,
-            
             **kwargs,
         )
         self.action_space = Discrete(19)
@@ -187,7 +186,7 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
 
         e_phi_norm = np.abs(e_phi_deg / 180)
         r = self._environment_boundary_radius # 2.0 by default
-
+        
         terminated, reward =  self.ogrf(self._x_start, self._y_start, x_t, y_t, x, y, e_phi_norm, r, self._step_n)
         info = {
             "x_position": 0,
@@ -201,7 +200,7 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
             truncated = True
         else:
             truncated = False
-
+        print("rew: " + str(reward))
         return observation, reward, terminated, truncated, info
 
     def reset_model(self):

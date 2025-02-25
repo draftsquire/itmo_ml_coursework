@@ -27,12 +27,13 @@ def huber(x, k=1.0):
     return torch.where(x.abs() < k, 0.5 * x.pow(2), k * (x.abs() - 0.5 * k))
 
 class ReplayMemory:
-    def __init__(self, capacity):
+    def __init__(self, capacity, device="cpu"):
         self.capacity = capacity
         self.memory = []
+        self.device = device
 
     def push(self, state, action, next_state, reward, done):
-        transition = torch.Tensor([state]), torch.tensor([action], dtype=torch.long), torch.Tensor([next_state]), torch.Tensor([reward]), torch.Tensor([done])
+        transition = torch.Tensor([state]).to(self.device), torch.tensor([action], dtype=torch.long).to(self.device), torch.Tensor([next_state]).to(self.device), torch.Tensor([reward]).to(self.device), torch.Tensor([done]).to(self.device)
         self.memory.append(transition)
         if len(self.memory) > self.capacity: del self.memory[0]
 

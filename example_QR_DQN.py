@@ -55,28 +55,30 @@ class DQN_QR(torch.nn.Module):
         self.num_actions = num_actions
         
         self.model=torch.nn.Sequential(
-            torch.nn.Linear(len_state,hidden_dim),
-            torch.nn.LeakyReLU(),
+            torch.nn.Linear(len_state, hidden_dim),
+            torch.nn.Tanh(),
             torch.nn.Linear(hidden_dim, num_actions*num_quant)
         )
         self.optimizer=torch.optim.Adam(self.model.parameters(), lr)
-    # def huber(self, x, k=1.0):
-    #     return torch.where(x.abs() < k, 0.5 * x.pow(2), k * (x.abs() - 0.5 * k))
     def forward(self, x):
         y = self.model(x)
         return y.view(-1, self.num_actions, self.num_quant)
     
-    def select_action(self, state, eps):
+    def select_action(self, state, eps, device="cpu", training_started=True):
         if not isinstance(state, torch.Tensor): 
             state = torch.Tensor([state])    
-        
-        if random.random() > eps:
+        state = state.to(device)
+
+        if not training_started:
+            action = torch.randint(0, self.num_actions, (1,), device=device)
+            return int(action)
+
+        if (random.random() > eps):
             action = self.forward(state).mean(2).max(1)[1]
         else:
-            action = torch.randint(0, self.num_actions, (1,))
+            action = torch.randint(0, self.num_actions, (1,), device=device)
                  
         return int(action)
-
 
 
 if __name__ == '__main__':
@@ -110,7 +112,7 @@ if __name__ == '__main__':
         max_episode_steps=STEPS_MAX,
         reward_threshold=4600,
     )
-    env_boudary_radius = 10.
+    env_boudary_radius = 500.
     coords = generate_coordinates(10000)
     env = gym.make('Mecanum-v0',coordinates=coords, max_steps=STEPS_MAX, camera_config=CAMERA_CONFIG, environment_boundary_radius=env_boudary_radius)
     observation, info = env.reset()
@@ -164,7 +166,7 @@ if __name__ == '__main__':
     gamma, batch_size = 0.99, 32 
     tau = torch.Tensor((2 * np.arange(Z.num_quant) + 1) / (2.0 * Z.num_quant)).view(1, -1)
     LEARNING_STARTS = 2e+5
-
+    training_started = False
     for episode in range(EPISODES_MAX): 
         # print("episode #" + str(episode))
         sum_reward = 0
@@ -175,7 +177,7 @@ if __name__ == '__main__':
         while True:
                 steps_done += 1
                 steps_local += 1
-                action = Z.select_action(torch.Tensor([state]), eps(steps_done))
+                action = Z.select_action(torch.Tensor(np.array(state)), eps(steps_done))
                 next_state, reward, terminated, truncated, info = env.step(action_space[action])
                 done = terminated or truncated
                 memory.push(state, action, next_state, reward, float(done))
@@ -186,8 +188,10 @@ if __name__ == '__main__':
                         running_reward = sum_reward
                         break
                     else:
+                        state = next_state  # Ensure to update state even when not learning
                         continue
-
+                else:
+                    training_started = True            
                 states, actions, rewards, next_states, dones = memory.sample(batch_size)
                 
                 theta = Z(states)[np.arange(batch_size), actions]
