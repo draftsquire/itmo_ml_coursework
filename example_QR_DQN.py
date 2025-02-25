@@ -48,7 +48,7 @@ def show_state(environment, episode=0, step=0, info=""):
 
 
 class DQN_QR(torch.nn.Module):
-    def __init__(self, len_state, num_quant, num_actions, hidden_dim=256):
+    def __init__(self, len_state, num_quant, num_actions, hidden_dim=256, lr=1e-3):
         torch.nn.Module.__init__(self)
         
         self.num_quant = num_quant
@@ -59,7 +59,9 @@ class DQN_QR(torch.nn.Module):
             torch.nn.LeakyReLU(),
             torch.nn.Linear(hidden_dim, num_actions*num_quant)
         )
-
+        self.optimizer=torch.optim.Adam(self.model.parameters(), lr)
+    # def huber(self, x, k=1.0):
+    #     return torch.where(x.abs() < k, 0.5 * x.pow(2), k * (x.abs() - 0.5 * k))
     def forward(self, x):
         y = self.model(x)
         return y.view(-1, self.num_actions, self.num_quant)
@@ -110,7 +112,7 @@ if __name__ == '__main__':
     )
     env_boudary_radius = 10.
     coords = generate_coordinates(10000)
-    env = gym.make('Mecanum-v0',coordinates=coords, camera_config=CAMERA_CONFIG, environment_boundary_radius=env_boudary_radius)
+    env = gym.make('Mecanum-v0',coordinates=coords, max_steps=STEPS_MAX, camera_config=CAMERA_CONFIG, environment_boundary_radius=env_boudary_radius)
     observation, info = env.reset()
     print('Space shapes', env.observation_space.shape, env.action_space.shape)
 
@@ -157,9 +159,8 @@ if __name__ == '__main__':
     Z = DQN_QR(len_state=n_states, num_quant=10, num_actions=n_actions, hidden_dim=256)
     Ztgt = DQN_QR(len_state=n_states, num_quant=10, num_actions=n_actions, hidden_dim=256)
     optimizer = torch.optim.Adam(Z.parameters(), 1e-3) #5-e5
-
+    running_reward=None
     steps_done = 0
-    running_reward = None
     gamma, batch_size = 0.99, 32 
     tau = torch.Tensor((2 * np.arange(Z.num_quant) + 1) / (2.0 * Z.num_quant)).view(1, -1)
     LEARNING_STARTS = 2e+5
@@ -175,12 +176,18 @@ if __name__ == '__main__':
                 steps_done += 1
                 steps_local += 1
                 action = Z.select_action(torch.Tensor([state]), eps(steps_done))
-                next_state, reward, done, _truncated, info = env.step(action_space[action])
-
+                next_state, reward, terminated, truncated, info = env.step(action_space[action])
+                done = terminated or truncated
                 memory.push(state, action, next_state, reward, float(done))
                 sum_reward += reward
 
-                if (steps_done < LEARNING_STARTS) or (len(memory) < batch_size): break    
+                if (steps_done < LEARNING_STARTS) or (len(memory) < batch_size):
+                    if done:
+                        running_reward = sum_reward
+                        break
+                    else:
+                        continue
+
                 states, actions, rewards, next_states, dones = memory.sample(batch_size)
                 
                 theta = Z(states)[np.arange(batch_size), actions]
@@ -200,15 +207,17 @@ if __name__ == '__main__':
                 
                 if steps_done % 1000 == 0: # Target Network update interval
                     Ztgt.load_state_dict(Z.state_dict())
-                    
-                if done: 
-                    running_reward = sum_reward  if not running_reward else 0.2 * sum_reward + running_reward*0.8
-                    break
-    
 
                 if done and episode % 50 == 0:
                     logger.add(episode, steps=steps_local, running_reward=running_reward, loss=loss.data.numpy())
                     logger.iter_info()
+
+                if done: 
+                    running_reward = sum_reward
+                    break
+    
+
+
                     
     env.close()                
                 

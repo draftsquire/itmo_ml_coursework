@@ -75,11 +75,12 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
         ],
         "render_fps": 500,
     }
-
+    DEFAULT_MAX_STEPS=10000
     def __init__(
         self,
         coordinates, # Used for starting and target points
         mecanum_xml: str =  os.path.join(os.getcwd(),"mecanum.xml"),
+        max_steps=DEFAULT_MAX_STEPS,
         camera_config=DEFAULT_CAMERA_CONFIG,
         reset_noise_scale=1.,
         environment_boundary_radius=3.,
@@ -90,12 +91,13 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
             self,
             reset_noise_scale,
             coordinates,
+            max_steps,
             reset_noise_scale,
             environment_boundary_radius,
-            
             **kwargs,
         )
 
+        self._max_steps = max_steps
         self._camera_config = camera_config
         self._reset_noise_scale = reset_noise_scale # TODO: deprecated!
         self._coordinates = coordinates
@@ -194,7 +196,11 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
         self._step_n += 1
         if self.render_mode == "human":
             self.render()
-        truncated = False
+
+        if self._step_n >= self._max_steps:
+            truncated = True
+        else:
+            truncated = False
 
         return observation, reward, terminated, truncated, info
 
