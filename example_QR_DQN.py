@@ -19,7 +19,7 @@ import math
 import torchvision.transforms as T
 import time
 
-GENERATE_SCENE = False
+
 
 def generate_coordinates(n, init_pos=(0, 0), x_range=(-1, 1), y_range=(-1, 1)):
     """Generates N random (x, y) coordinate pairs within specified ranges.
@@ -50,23 +50,23 @@ def show_state(environment, episode=0, step=0, info=""):
 class DQN_QR(torch.nn.Module):
     def __init__(self, len_state, num_quant, num_actions, hidden_dim=256, lr=1e-3):
         torch.nn.Module.__init__(self)
-        
+
         self.num_quant = num_quant
         self.num_actions = num_actions
-        
+
         self.model=torch.nn.Sequential(
             torch.nn.Linear(len_state, hidden_dim),
-            torch.nn.Tanh(),
+            torch.nn.LeakyReLU(),
             torch.nn.Linear(hidden_dim, num_actions*num_quant)
         )
         self.optimizer=torch.optim.Adam(self.model.parameters(), lr)
     def forward(self, x):
         y = self.model(x)
         return y.view(-1, self.num_actions, self.num_quant)
-    
-    def select_action(self, state, eps, device="cpu", training_started=True):
-        if not isinstance(state, torch.Tensor): 
-            state = torch.Tensor([state])    
+
+    def select_action(self, state, eps, device="cuda", training_started=True):
+        if not isinstance(state, torch.Tensor):
+            state = torch.Tensor([state])
         state = state.to(device)
 
         if not training_started:
@@ -77,11 +77,16 @@ class DQN_QR(torch.nn.Module):
             action = self.forward(state).mean(2).max(1)[1]
         else:
             action = torch.randint(0, self.num_actions, (1,), device=device)
-                 
+
         return int(action)
 
 
+
+GENERATE_SCENE = True
 if __name__ == '__main__':
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # device = "cpu"
+    print("Using device:", device)
     if GENERATE_SCENE:
         spec = generate_scene_empty([0, 0, 0])
         spec.add_sensor(name='pos_c', type=mujoco.mjtSensor.mjSENS_FRAMEPOS, objname='box_center', objtype=mujoco.mjtObj.mjOBJ_SITE)
@@ -103,18 +108,18 @@ if __name__ == '__main__':
     }
 
 
-    EPISODES_MAX = 10000000
-    EPISODES_N = EPISODES_MAX
-    STEPS_MAX = 10000
+    EPISODES_MAX = 1500
+    MAX_EPISODE_STEPS = 10000
+    MAX_LEARNING_STEPS = 15000000
     register(
         id="Mecanum-v0",
         entry_point="gym_env_mecanum:MecanumEnv",
-        max_episode_steps=STEPS_MAX,
-        reward_threshold=4600,
+        max_episode_steps=MAX_EPISODE_STEPS,
+        reward_threshold=6000,
     )
-    env_boudary_radius = 500.
-    coords = generate_coordinates(10000)
-    env = gym.make('Mecanum-v0',coordinates=coords, max_steps=STEPS_MAX, camera_config=CAMERA_CONFIG, environment_boundary_radius=env_boudary_radius)
+    env_boudary_radius = 10.
+    coords = generate_coordinates(10)
+    env = gym.make('Mecanum-v0', render_mode='human', coordinates=coords, max_steps=MAX_EPISODE_STEPS, camera_config=CAMERA_CONFIG, environment_boundary_radius=env_boudary_radius)
     observation, info = env.reset()
     print('Space shapes', env.observation_space.shape, env.action_space.shape)
 
@@ -138,11 +143,12 @@ if __name__ == '__main__':
         [-0.5,  0.5,  0.5, -0.5],  # x positive, low speed
         [ 0,   0.5,  0.5,  0  ],  # quadrant 1, low speed
         [ 0.5,  0.5,  0.5,  0.5],  # y positive, low speed
-        [ 1,  -1,  1,   -1  ],  # CCW rotation, high speed
-        [-1,  1,   -1,  1  ],  # CW rotation, high speed
+        [ 0.5,  -0.5,  0.5, -0.5],  # CCW rotation, high speed
+        [-0.5,   0.5, -0.5,  0.5],  # CW rotation, high speed
     ])
         # Swap the last two columns. In the article, first two columns stand for RF and LF wheels,
-    #  but in our model it's vice-versa 
+    #  but in our model it's vice-versa
+    action_space = action_space*2
     action_space[:, [2, 3]] = action_space[:, [3, 2]]
     action_space = -1. * action_space 
 
@@ -152,18 +158,18 @@ if __name__ == '__main__':
     n_actions = len(action_space)
 
     # Learning Parameters
-    eps_start, eps_end, eps_dec = 1.0, 0.05, EPISODES_N 
+    eps_start, eps_end, eps_dec = 1.0, 0.05, EPISODES_MAX
     eps = lambda steps: eps_end + (eps_start - eps_end) * np.exp(-1. * steps / eps_dec)
 
     memory = ReplayMemory(6e+6)
     logger = Logger('q-net', fmt={'loss': '.5f'})
 
-    Z = DQN_QR(len_state=n_states, num_quant=10, num_actions=n_actions, hidden_dim=256)
-    Ztgt = DQN_QR(len_state=n_states, num_quant=10, num_actions=n_actions, hidden_dim=256)
+    Z = DQN_QR(len_state=n_states, num_quant=110, num_actions=n_actions, hidden_dim=256)
+    Ztgt = DQN_QR(len_state=n_states, num_quant=110, num_actions=n_actions, hidden_dim=256)
     optimizer = torch.optim.Adam(Z.parameters(), 1e-3) #5-e5
     running_reward=None
     steps_done = 0
-    gamma, batch_size = 0.99, 32 
+    gamma, batch_size = 0.99, 512
     tau = torch.Tensor((2 * np.arange(Z.num_quant) + 1) / (2.0 * Z.num_quant)).view(1, -1)
     LEARNING_STARTS = 2e+5
     training_started = False
@@ -177,15 +183,15 @@ if __name__ == '__main__':
         while True:
                 steps_done += 1
                 steps_local += 1
-                action = Z.select_action(torch.Tensor(np.array(state)), eps(steps_done))
+                action = Z.select_action(torch.Tensor(np.array(state)), eps(steps_done), device=device, training_started=training_started)
                 next_state, reward, terminated, truncated, info = env.step(action_space[action])
-                done = terminated or truncated
+                done = (terminated or truncated)
                 memory.push(state, action, next_state, reward, float(done))
                 sum_reward += reward
 
                 if (steps_done < LEARNING_STARTS) or (len(memory) < batch_size):
                     if done:
-                        running_reward = sum_reward
+                        print("sum_reward: " + str(sum_reward))
                         break
                     else:
                         state = next_state  # Ensure to update state even when not learning
@@ -193,7 +199,12 @@ if __name__ == '__main__':
                 else:
                     training_started = True            
                 states, actions, rewards, next_states, dones = memory.sample(batch_size)
-                
+                states = states.to(device)
+                actions = actions.to(device)
+                rewards = rewards.to(device)
+                next_states = next_states.to(device)
+                dones = dones.to(device)
+
                 theta = Z(states)[np.arange(batch_size), actions]
                 
                 Znext = Ztgt(next_states).detach()
@@ -212,17 +223,15 @@ if __name__ == '__main__':
                 if steps_done % 1000 == 0: # Target Network update interval
                     Ztgt.load_state_dict(Z.state_dict())
 
-                if done and episode % 50 == 0:
-                    logger.add(episode, steps=steps_local, running_reward=running_reward, loss=loss.data.numpy())
+                if done: #if done and episode % 50 == 0:
+                    logger.add(episode, steps=steps_local, running_reward=sum_reward, loss=loss.data.numpy())
                     logger.iter_info()
 
-                if done: 
-                    running_reward = sum_reward
+                if done:
                     break
-    
 
-
-                    
+        if steps_done >= MAX_LEARNING_STEPS: # As in Paper
+            break
     env.close()                
                 
 

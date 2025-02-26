@@ -73,7 +73,7 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
             "rgb_array",
             "depth_array",
         ],
-        "render_fps": 500,
+        "render_fps": 125,
     }
     DEFAULT_MAX_STEPS=10000
     def __init__(
@@ -84,7 +84,7 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
         max_steps=DEFAULT_MAX_STEPS,
         camera_config=DEFAULT_CAMERA_CONFIG,
         reset_noise_scale=1.,
-        frame_skip: int = 1,
+        frame_skip: int = 4,
         **kwargs,
     ):
         utils.EzPickle.__init__(
@@ -185,9 +185,9 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
         x, y, v_x, v_y, omega_z, x_t, y_t, e_x, e_y, E_dist, e_phi_deg = observation
 
         e_phi_norm = np.abs(e_phi_deg / 180)
-        r = self._environment_boundary_radius # 2.0 by default
+        r = self._environment_boundary_radius
         
-        terminated, reward =  self.ogrf(self._x_start, self._y_start, x_t, y_t, x, y, e_phi_norm, r, self._step_n)
+        terminated, reward =  self.ogrf(self._x_start, self._y_start, self._x_target, self._y_target, x, y, e_phi_norm, r, self._step_n)
         info = {
             "x_position": 0,
             "x_velocity": 0,
@@ -200,7 +200,7 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
             truncated = True
         else:
             truncated = False
-        print("rew: " + str(reward))
+        # print("rew: " + str(reward))
         return observation, reward, terminated, truncated, info
 
     def reset_model(self):
@@ -211,7 +211,7 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
         """
         n = len(self._coordinates)
         qpos = self.init_qpos
-        if (self._episode_n >= n):
+        if self._episode_n >= n:
             coordinates_index = self._episode_n % n
         else:
             coordinates_index = self._episode_n

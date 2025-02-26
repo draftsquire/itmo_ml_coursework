@@ -214,11 +214,16 @@ def generate_scene_empty(init_pos=[0,0,0], n_rollers=8, torq_max=0):
     disable_parts_contact(spec, [(box, w1, *w1.bodies),
                                  (box, w2, *w2.bodies),
                                  (box, w3, *w3.bodies),
-                                 (box, w4, *w4.bodies),
-                                 (w1, spec.worldbody),
-                                 (w2, spec.worldbody),
-                                 (w3, spec.worldbody),
-                                 (w4, spec.worldbody)])
+                                 (box, w4, *w4.bodies)])
+
+    # disable_parts_contact(spec, [(box, w1, *w1.bodies),
+    #                              (box, w2, *w2.bodies),
+    #                              (box, w3, *w3.bod+ies),
+    #                              (box, w4, *w4.bodies),
+    #                              (w1, spec.worldbody),
+    #                              (w2, spec.worldbody),
+    #                              (w3, spec.worldbody),
+    #                              (w4, spec.worldbody)])
     # Collision is enabled only for pairs world-rollers(spheres) and world-chassie(box). 
     # Hub and visual wheel are disabled
 
@@ -283,8 +288,8 @@ def generate_scene(init_pos=[0,0,0], n_rollers=8, torq_max=0):
     mecanum1_visual = spec.add_mesh(name='mesh1', file=join(mesh_path,wheel_filename), scale=[.78,.78,.78])
     mecanum2_visual = spec.add_mesh(name='mesh2', file=join(mesh_path,wheel_filename), scale=[.78,.78,-.78])
 
-    l, w, h = .4, .2, .05
-    wR = 0.04
+    l, w, h = .3, .2, .35
+    wR = 0.1
     hub_thickness = wR
     # n_roll = 8
 
