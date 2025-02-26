@@ -211,19 +211,19 @@ def generate_scene_empty(init_pos=[0,0,0], n_rollers=8, torq_max=0):
     w3.add_geom(type=mujoco.mjtGeom.mjGEOM_MESH, meshname=mecanum1_visual.name, euler=[90,0,0], group=2, rgba=wheel_color)
     w4.add_geom(type=mujoco.mjtGeom.mjGEOM_MESH, meshname=mecanum2_visual.name, euler=[90,0,0], group=2, rgba=wheel_color)
 
+    # disable_parts_contact(spec, [(box, w1, *w1.bodies),
+    #                              (box, w2, *w2.bodies),
+    #                              (box, w3, *w3.bodies),
+    #                              (box, w4, *w4.bodies)])
+
     disable_parts_contact(spec, [(box, w1, *w1.bodies),
                                  (box, w2, *w2.bodies),
                                  (box, w3, *w3.bodies),
-                                 (box, w4, *w4.bodies)])
-
-    # disable_parts_contact(spec, [(box, w1, *w1.bodies),
-    #                              (box, w2, *w2.bodies),
-    #                              (box, w3, *w3.bod+ies),
-    #                              (box, w4, *w4.bodies),
-    #                              (w1, spec.worldbody),
-    #                              (w2, spec.worldbody),
-    #                              (w3, spec.worldbody),
-    #                              (w4, spec.worldbody)])
+                                 (box, w4, *w4.bodies),
+                                 (w1, spec.worldbody),
+                                 (w2, spec.worldbody),
+                                 (w3, spec.worldbody),
+                                 (w4, spec.worldbody)])
     # Collision is enabled only for pairs world-rollers(spheres) and world-chassie(box). 
     # Hub and visual wheel are disabled
 

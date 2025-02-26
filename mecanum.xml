@@ -18,8 +18,8 @@
     <texture type="skybox" name="//unnamed_texture_0" builtin="flat" rgb1="1 1 1" rgb2="1 1 1" width="512" height="3072"/>
     <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300"/>
     <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
-    <mesh name="mesh1" file="meshes/mecanum.stl" scale="0.78 0.78 0.78"/>
-    <mesh name="mesh2" file="meshes/mecanum.stl" scale="0.78 0.78 -0.78"/>
+    <mesh name="mesh1" file="meshes\mecanum.stl" scale="0.78 0.78 0.78"/>
+    <mesh name="mesh2" file="meshes\mecanum.stl" scale="0.78 0.78 -0.78"/>
   </asset>
 
   <worldbody>
@@ -188,10 +188,14 @@
   </worldbody>
 
   <contact>
+    <exclude name="exclude_world_w1-hub" body1="world" body2="w1-hub"/>
+    <exclude name="exclude_w2-hub_world" body1="world" body2="w2-hub"/>
+    <exclude name="exclude_w3-hub_world" body1="world" body2="w3-hub"/>
+    <exclude name="exclude_world_w4-hub" body1="world" body2="w4-hub"/>
     <exclude name="exclude_box_w1-hub" body1="box" body2="w1-hub"/>
     <exclude name="exclude_box_w1-roller_0" body1="box" body2="w1-roller_0"/>
     <exclude name="exclude_w1-roller_1_box" body1="box" body2="w1-roller_1"/>
-    <exclude name="exclude_box_w1-roller_2" body1="box" body2="w1-roller_2"/>
+    <exclude name="exclude_w1-roller_2_box" body1="box" body2="w1-roller_2"/>
     <exclude name="exclude_box_w1-roller_3" body1="box" body2="w1-roller_3"/>
     <exclude name="exclude_box_w1-roller_4" body1="box" body2="w1-roller_4"/>
     <exclude name="exclude_box_w1-roller_5" body1="box" body2="w1-roller_5"/>
@@ -199,16 +203,16 @@
     <exclude name="exclude_box_w1-roller_7" body1="box" body2="w1-roller_7"/>
     <exclude name="exclude_box_w2-hub" body1="box" body2="w2-hub"/>
     <exclude name="exclude_box_w2-roller_0" body1="box" body2="w2-roller_0"/>
-    <exclude name="exclude_box_w2-roller_1" body1="box" body2="w2-roller_1"/>
+    <exclude name="exclude_w2-roller_1_box" body1="box" body2="w2-roller_1"/>
     <exclude name="exclude_w2-roller_2_box" body1="box" body2="w2-roller_2"/>
     <exclude name="exclude_box_w2-roller_3" body1="box" body2="w2-roller_3"/>
     <exclude name="exclude_box_w2-roller_4" body1="box" body2="w2-roller_4"/>
     <exclude name="exclude_box_w2-roller_5" body1="box" body2="w2-roller_5"/>
-    <exclude name="exclude_box_w2-roller_6" body1="box" body2="w2-roller_6"/>
+    <exclude name="exclude_w2-roller_6_box" body1="box" body2="w2-roller_6"/>
     <exclude name="exclude_box_w2-roller_7" body1="box" body2="w2-roller_7"/>
-    <exclude name="exclude_w3-hub_box" body1="box" body2="w3-hub"/>
+    <exclude name="exclude_box_w3-hub" body1="box" body2="w3-hub"/>
     <exclude name="exclude_box_w3-roller_0" body1="box" body2="w3-roller_0"/>
-    <exclude name="exclude_box_w3-roller_1" body1="box" body2="w3-roller_1"/>
+    <exclude name="exclude_w3-roller_1_box" body1="box" body2="w3-roller_1"/>
     <exclude name="exclude_w3-roller_2_box" body1="box" body2="w3-roller_2"/>
     <exclude name="exclude_box_w3-roller_3" body1="box" body2="w3-roller_3"/>
     <exclude name="exclude_box_w3-roller_4" body1="box" body2="w3-roller_4"/>
@@ -217,7 +221,7 @@
     <exclude name="exclude_box_w3-roller_7" body1="box" body2="w3-roller_7"/>
     <exclude name="exclude_box_w4-hub" body1="box" body2="w4-hub"/>
     <exclude name="exclude_box_w4-roller_0" body1="box" body2="w4-roller_0"/>
-    <exclude name="exclude_box_w4-roller_1" body1="box" body2="w4-roller_1"/>
+    <exclude name="exclude_w4-roller_1_box" body1="box" body2="w4-roller_1"/>
     <exclude name="exclude_w4-roller_2_box" body1="box" body2="w4-roller_2"/>
     <exclude name="exclude_box_w4-roller_3" body1="box" body2="w4-roller_3"/>
     <exclude name="exclude_box_w4-roller_4" body1="box" body2="w4-roller_4"/>
@@ -228,15 +232,15 @@
     <exclude name="exclude_w1-roller_1_w1-hub" body1="w1-hub" body2="w1-roller_1"/>
     <exclude name="exclude_w1-roller_2_w1-hub" body1="w1-hub" body2="w1-roller_2"/>
     <exclude name="exclude_w1-roller_3_w1-hub" body1="w1-hub" body2="w1-roller_3"/>
-    <exclude name="exclude_w1-hub_w1-roller_4" body1="w1-hub" body2="w1-roller_4"/>
+    <exclude name="exclude_w1-roller_4_w1-hub" body1="w1-hub" body2="w1-roller_4"/>
     <exclude name="exclude_w1-roller_5_w1-hub" body1="w1-hub" body2="w1-roller_5"/>
     <exclude name="exclude_w1-roller_6_w1-hub" body1="w1-hub" body2="w1-roller_6"/>
-    <exclude name="exclude_w1-hub_w1-roller_7" body1="w1-hub" body2="w1-roller_7"/>
+    <exclude name="exclude_w1-roller_7_w1-hub" body1="w1-hub" body2="w1-roller_7"/>
     <exclude name="exclude_w1-roller_1_w1-roller_0" body1="w1-roller_0" body2="w1-roller_1"/>
-    <exclude name="exclude_w1-roller_0_w1-roller_2" body1="w1-roller_0" body2="w1-roller_2"/>
-    <exclude name="exclude_w1-roller_0_w1-roller_3" body1="w1-roller_0" body2="w1-roller_3"/>
+    <exclude name="exclude_w1-roller_2_w1-roller_0" body1="w1-roller_0" body2="w1-roller_2"/>
+    <exclude name="exclude_w1-roller_3_w1-roller_0" body1="w1-roller_0" body2="w1-roller_3"/>
     <exclude name="exclude_w1-roller_0_w1-roller_4" body1="w1-roller_0" body2="w1-roller_4"/>
-    <exclude name="exclude_w1-roller_5_w1-roller_0" body1="w1-roller_0" body2="w1-roller_5"/>
+    <exclude name="exclude_w1-roller_0_w1-roller_5" body1="w1-roller_0" body2="w1-roller_5"/>
     <exclude name="exclude_w1-roller_0_w1-roller_6" body1="w1-roller_0" body2="w1-roller_6"/>
     <exclude name="exclude_w1-roller_0_w1-roller_7" body1="w1-roller_0" body2="w1-roller_7"/>
     <exclude name="exclude_w1-roller_1_w1-roller_2" body1="w1-roller_1" body2="w1-roller_2"/>
@@ -247,40 +251,40 @@
     <exclude name="exclude_w1-roller_1_w1-roller_7" body1="w1-roller_1" body2="w1-roller_7"/>
     <exclude name="exclude_w1-roller_2_w1-roller_3" body1="w1-roller_2" body2="w1-roller_3"/>
     <exclude name="exclude_w1-roller_2_w1-roller_4" body1="w1-roller_2" body2="w1-roller_4"/>
-    <exclude name="exclude_w1-roller_5_w1-roller_2" body1="w1-roller_2" body2="w1-roller_5"/>
+    <exclude name="exclude_w1-roller_2_w1-roller_5" body1="w1-roller_2" body2="w1-roller_5"/>
     <exclude name="exclude_w1-roller_2_w1-roller_6" body1="w1-roller_2" body2="w1-roller_6"/>
     <exclude name="exclude_w1-roller_2_w1-roller_7" body1="w1-roller_2" body2="w1-roller_7"/>
     <exclude name="exclude_w1-roller_3_w1-roller_4" body1="w1-roller_3" body2="w1-roller_4"/>
-    <exclude name="exclude_w1-roller_5_w1-roller_3" body1="w1-roller_3" body2="w1-roller_5"/>
+    <exclude name="exclude_w1-roller_3_w1-roller_5" body1="w1-roller_3" body2="w1-roller_5"/>
     <exclude name="exclude_w1-roller_3_w1-roller_6" body1="w1-roller_3" body2="w1-roller_6"/>
     <exclude name="exclude_w1-roller_3_w1-roller_7" body1="w1-roller_3" body2="w1-roller_7"/>
-    <exclude name="exclude_w1-roller_5_w1-roller_4" body1="w1-roller_4" body2="w1-roller_5"/>
-    <exclude name="exclude_w1-roller_6_w1-roller_4" body1="w1-roller_4" body2="w1-roller_6"/>
-    <exclude name="exclude_w1-roller_7_w1-roller_4" body1="w1-roller_4" body2="w1-roller_7"/>
+    <exclude name="exclude_w1-roller_4_w1-roller_5" body1="w1-roller_4" body2="w1-roller_5"/>
+    <exclude name="exclude_w1-roller_4_w1-roller_6" body1="w1-roller_4" body2="w1-roller_6"/>
+    <exclude name="exclude_w1-roller_4_w1-roller_7" body1="w1-roller_4" body2="w1-roller_7"/>
     <exclude name="exclude_w1-roller_5_w1-roller_6" body1="w1-roller_5" body2="w1-roller_6"/>
     <exclude name="exclude_w1-roller_5_w1-roller_7" body1="w1-roller_5" body2="w1-roller_7"/>
     <exclude name="exclude_w1-roller_6_w1-roller_7" body1="w1-roller_6" body2="w1-roller_7"/>
-    <exclude name="exclude_w2-hub_w2-roller_0" body1="w2-hub" body2="w2-roller_0"/>
-    <exclude name="exclude_w2-hub_w2-roller_1" body1="w2-hub" body2="w2-roller_1"/>
+    <exclude name="exclude_w2-roller_0_w2-hub" body1="w2-hub" body2="w2-roller_0"/>
+    <exclude name="exclude_w2-roller_1_w2-hub" body1="w2-hub" body2="w2-roller_1"/>
     <exclude name="exclude_w2-roller_2_w2-hub" body1="w2-hub" body2="w2-roller_2"/>
     <exclude name="exclude_w2-roller_3_w2-hub" body1="w2-hub" body2="w2-roller_3"/>
-    <exclude name="exclude_w2-hub_w2-roller_4" body1="w2-hub" body2="w2-roller_4"/>
-    <exclude name="exclude_w2-hub_w2-roller_5" body1="w2-hub" body2="w2-roller_5"/>
-    <exclude name="exclude_w2-hub_w2-roller_6" body1="w2-hub" body2="w2-roller_6"/>
+    <exclude name="exclude_w2-roller_4_w2-hub" body1="w2-hub" body2="w2-roller_4"/>
+    <exclude name="exclude_w2-roller_5_w2-hub" body1="w2-hub" body2="w2-roller_5"/>
+    <exclude name="exclude_w2-roller_6_w2-hub" body1="w2-hub" body2="w2-roller_6"/>
     <exclude name="exclude_w2-hub_w2-roller_7" body1="w2-hub" body2="w2-roller_7"/>
-    <exclude name="exclude_w2-roller_0_w2-roller_1" body1="w2-roller_0" body2="w2-roller_1"/>
+    <exclude name="exclude_w2-roller_1_w2-roller_0" body1="w2-roller_0" body2="w2-roller_1"/>
     <exclude name="exclude_w2-roller_2_w2-roller_0" body1="w2-roller_0" body2="w2-roller_2"/>
     <exclude name="exclude_w2-roller_3_w2-roller_0" body1="w2-roller_0" body2="w2-roller_3"/>
     <exclude name="exclude_w2-roller_4_w2-roller_0" body1="w2-roller_0" body2="w2-roller_4"/>
-    <exclude name="exclude_w2-roller_5_w2-roller_0" body1="w2-roller_0" body2="w2-roller_5"/>
+    <exclude name="exclude_w2-roller_0_w2-roller_5" body1="w2-roller_0" body2="w2-roller_5"/>
     <exclude name="exclude_w2-roller_6_w2-roller_0" body1="w2-roller_0" body2="w2-roller_6"/>
     <exclude name="exclude_w2-roller_0_w2-roller_7" body1="w2-roller_0" body2="w2-roller_7"/>
-    <exclude name="exclude_w2-roller_2_w2-roller_1" body1="w2-roller_1" body2="w2-roller_2"/>
-    <exclude name="exclude_w2-roller_3_w2-roller_1" body1="w2-roller_1" body2="w2-roller_3"/>
-    <exclude name="exclude_w2-roller_4_w2-roller_1" body1="w2-roller_1" body2="w2-roller_4"/>
-    <exclude name="exclude_w2-roller_5_w2-roller_1" body1="w2-roller_1" body2="w2-roller_5"/>
-    <exclude name="exclude_w2-roller_6_w2-roller_1" body1="w2-roller_1" body2="w2-roller_6"/>
-    <exclude name="exclude_w2-roller_7_w2-roller_1" body1="w2-roller_1" body2="w2-roller_7"/>
+    <exclude name="exclude_w2-roller_1_w2-roller_2" body1="w2-roller_1" body2="w2-roller_2"/>
+    <exclude name="exclude_w2-roller_1_w2-roller_3" body1="w2-roller_1" body2="w2-roller_3"/>
+    <exclude name="exclude_w2-roller_1_w2-roller_4" body1="w2-roller_1" body2="w2-roller_4"/>
+    <exclude name="exclude_w2-roller_1_w2-roller_5" body1="w2-roller_1" body2="w2-roller_5"/>
+    <exclude name="exclude_w2-roller_1_w2-roller_6" body1="w2-roller_1" body2="w2-roller_6"/>
+    <exclude name="exclude_w2-roller_1_w2-roller_7" body1="w2-roller_1" body2="w2-roller_7"/>
     <exclude name="exclude_w2-roller_2_w2-roller_3" body1="w2-roller_2" body2="w2-roller_3"/>
     <exclude name="exclude_w2-roller_2_w2-roller_4" body1="w2-roller_2" body2="w2-roller_4"/>
     <exclude name="exclude_w2-roller_2_w2-roller_5" body1="w2-roller_2" body2="w2-roller_5"/>
@@ -288,35 +292,35 @@
     <exclude name="exclude_w2-roller_2_w2-roller_7" body1="w2-roller_2" body2="w2-roller_7"/>
     <exclude name="exclude_w2-roller_3_w2-roller_4" body1="w2-roller_3" body2="w2-roller_4"/>
     <exclude name="exclude_w2-roller_3_w2-roller_5" body1="w2-roller_3" body2="w2-roller_5"/>
-    <exclude name="exclude_w2-roller_3_w2-roller_6" body1="w2-roller_3" body2="w2-roller_6"/>
+    <exclude name="exclude_w2-roller_6_w2-roller_3" body1="w2-roller_3" body2="w2-roller_6"/>
     <exclude name="exclude_w2-roller_3_w2-roller_7" body1="w2-roller_3" body2="w2-roller_7"/>
     <exclude name="exclude_w2-roller_4_w2-roller_5" body1="w2-roller_4" body2="w2-roller_5"/>
-    <exclude name="exclude_w2-roller_4_w2-roller_6" body1="w2-roller_4" body2="w2-roller_6"/>
+    <exclude name="exclude_w2-roller_6_w2-roller_4" body1="w2-roller_4" body2="w2-roller_6"/>
     <exclude name="exclude_w2-roller_4_w2-roller_7" body1="w2-roller_4" body2="w2-roller_7"/>
     <exclude name="exclude_w2-roller_6_w2-roller_5" body1="w2-roller_5" body2="w2-roller_6"/>
     <exclude name="exclude_w2-roller_5_w2-roller_7" body1="w2-roller_5" body2="w2-roller_7"/>
     <exclude name="exclude_w2-roller_6_w2-roller_7" body1="w2-roller_6" body2="w2-roller_7"/>
     <exclude name="exclude_w3-hub_w3-roller_0" body1="w3-hub" body2="w3-roller_0"/>
-    <exclude name="exclude_w3-hub_w3-roller_1" body1="w3-hub" body2="w3-roller_1"/>
+    <exclude name="exclude_w3-roller_1_w3-hub" body1="w3-hub" body2="w3-roller_1"/>
     <exclude name="exclude_w3-roller_2_w3-hub" body1="w3-hub" body2="w3-roller_2"/>
-    <exclude name="exclude_w3-hub_w3-roller_3" body1="w3-hub" body2="w3-roller_3"/>
-    <exclude name="exclude_w3-hub_w3-roller_4" body1="w3-hub" body2="w3-roller_4"/>
+    <exclude name="exclude_w3-roller_3_w3-hub" body1="w3-hub" body2="w3-roller_3"/>
+    <exclude name="exclude_w3-roller_4_w3-hub" body1="w3-hub" body2="w3-roller_4"/>
     <exclude name="exclude_w3-hub_w3-roller_5" body1="w3-hub" body2="w3-roller_5"/>
     <exclude name="exclude_w3-hub_w3-roller_6" body1="w3-hub" body2="w3-roller_6"/>
     <exclude name="exclude_w3-hub_w3-roller_7" body1="w3-hub" body2="w3-roller_7"/>
-    <exclude name="exclude_w3-roller_0_w3-roller_1" body1="w3-roller_0" body2="w3-roller_1"/>
+    <exclude name="exclude_w3-roller_1_w3-roller_0" body1="w3-roller_0" body2="w3-roller_1"/>
     <exclude name="exclude_w3-roller_2_w3-roller_0" body1="w3-roller_0" body2="w3-roller_2"/>
     <exclude name="exclude_w3-roller_3_w3-roller_0" body1="w3-roller_0" body2="w3-roller_3"/>
     <exclude name="exclude_w3-roller_4_w3-roller_0" body1="w3-roller_0" body2="w3-roller_4"/>
     <exclude name="exclude_w3-roller_0_w3-roller_5" body1="w3-roller_0" body2="w3-roller_5"/>
     <exclude name="exclude_w3-roller_0_w3-roller_6" body1="w3-roller_0" body2="w3-roller_6"/>
     <exclude name="exclude_w3-roller_0_w3-roller_7" body1="w3-roller_0" body2="w3-roller_7"/>
-    <exclude name="exclude_w3-roller_2_w3-roller_1" body1="w3-roller_1" body2="w3-roller_2"/>
-    <exclude name="exclude_w3-roller_3_w3-roller_1" body1="w3-roller_1" body2="w3-roller_3"/>
-    <exclude name="exclude_w3-roller_4_w3-roller_1" body1="w3-roller_1" body2="w3-roller_4"/>
-    <exclude name="exclude_w3-roller_5_w3-roller_1" body1="w3-roller_1" body2="w3-roller_5"/>
-    <exclude name="exclude_w3-roller_6_w3-roller_1" body1="w3-roller_1" body2="w3-roller_6"/>
-    <exclude name="exclude_w3-roller_7_w3-roller_1" body1="w3-roller_1" body2="w3-roller_7"/>
+    <exclude name="exclude_w3-roller_1_w3-roller_2" body1="w3-roller_1" body2="w3-roller_2"/>
+    <exclude name="exclude_w3-roller_1_w3-roller_3" body1="w3-roller_1" body2="w3-roller_3"/>
+    <exclude name="exclude_w3-roller_1_w3-roller_4" body1="w3-roller_1" body2="w3-roller_4"/>
+    <exclude name="exclude_w3-roller_1_w3-roller_5" body1="w3-roller_1" body2="w3-roller_5"/>
+    <exclude name="exclude_w3-roller_1_w3-roller_6" body1="w3-roller_1" body2="w3-roller_6"/>
+    <exclude name="exclude_w3-roller_1_w3-roller_7" body1="w3-roller_1" body2="w3-roller_7"/>
     <exclude name="exclude_w3-roller_2_w3-roller_3" body1="w3-roller_2" body2="w3-roller_3"/>
     <exclude name="exclude_w3-roller_2_w3-roller_4" body1="w3-roller_2" body2="w3-roller_4"/>
     <exclude name="exclude_w3-roller_2_w3-roller_5" body1="w3-roller_2" body2="w3-roller_5"/>
@@ -333,26 +337,26 @@
     <exclude name="exclude_w3-roller_5_w3-roller_7" body1="w3-roller_5" body2="w3-roller_7"/>
     <exclude name="exclude_w3-roller_6_w3-roller_7" body1="w3-roller_6" body2="w3-roller_7"/>
     <exclude name="exclude_w4-roller_0_w4-hub" body1="w4-hub" body2="w4-roller_0"/>
-    <exclude name="exclude_w4-hub_w4-roller_1" body1="w4-hub" body2="w4-roller_1"/>
+    <exclude name="exclude_w4-roller_1_w4-hub" body1="w4-hub" body2="w4-roller_1"/>
     <exclude name="exclude_w4-roller_2_w4-hub" body1="w4-hub" body2="w4-roller_2"/>
     <exclude name="exclude_w4-roller_3_w4-hub" body1="w4-hub" body2="w4-roller_3"/>
     <exclude name="exclude_w4-roller_4_w4-hub" body1="w4-hub" body2="w4-roller_4"/>
-    <exclude name="exclude_w4-roller_5_w4-hub" body1="w4-hub" body2="w4-roller_5"/>
-    <exclude name="exclude_w4-roller_6_w4-hub" body1="w4-hub" body2="w4-roller_6"/>
+    <exclude name="exclude_w4-hub_w4-roller_5" body1="w4-hub" body2="w4-roller_5"/>
+    <exclude name="exclude_w4-hub_w4-roller_6" body1="w4-hub" body2="w4-roller_6"/>
     <exclude name="exclude_w4-hub_w4-roller_7" body1="w4-hub" body2="w4-roller_7"/>
-    <exclude name="exclude_w4-roller_0_w4-roller_1" body1="w4-roller_0" body2="w4-roller_1"/>
+    <exclude name="exclude_w4-roller_1_w4-roller_0" body1="w4-roller_0" body2="w4-roller_1"/>
     <exclude name="exclude_w4-roller_2_w4-roller_0" body1="w4-roller_0" body2="w4-roller_2"/>
     <exclude name="exclude_w4-roller_3_w4-roller_0" body1="w4-roller_0" body2="w4-roller_3"/>
     <exclude name="exclude_w4-roller_4_w4-roller_0" body1="w4-roller_0" body2="w4-roller_4"/>
     <exclude name="exclude_w4-roller_0_w4-roller_5" body1="w4-roller_0" body2="w4-roller_5"/>
-    <exclude name="exclude_w4-roller_6_w4-roller_0" body1="w4-roller_0" body2="w4-roller_6"/>
+    <exclude name="exclude_w4-roller_0_w4-roller_6" body1="w4-roller_0" body2="w4-roller_6"/>
     <exclude name="exclude_w4-roller_0_w4-roller_7" body1="w4-roller_0" body2="w4-roller_7"/>
-    <exclude name="exclude_w4-roller_2_w4-roller_1" body1="w4-roller_1" body2="w4-roller_2"/>
-    <exclude name="exclude_w4-roller_3_w4-roller_1" body1="w4-roller_1" body2="w4-roller_3"/>
-    <exclude name="exclude_w4-roller_4_w4-roller_1" body1="w4-roller_1" body2="w4-roller_4"/>
-    <exclude name="exclude_w4-roller_5_w4-roller_1" body1="w4-roller_1" body2="w4-roller_5"/>
-    <exclude name="exclude_w4-roller_6_w4-roller_1" body1="w4-roller_1" body2="w4-roller_6"/>
-    <exclude name="exclude_w4-roller_7_w4-roller_1" body1="w4-roller_1" body2="w4-roller_7"/>
+    <exclude name="exclude_w4-roller_1_w4-roller_2" body1="w4-roller_1" body2="w4-roller_2"/>
+    <exclude name="exclude_w4-roller_1_w4-roller_3" body1="w4-roller_1" body2="w4-roller_3"/>
+    <exclude name="exclude_w4-roller_1_w4-roller_4" body1="w4-roller_1" body2="w4-roller_4"/>
+    <exclude name="exclude_w4-roller_1_w4-roller_5" body1="w4-roller_1" body2="w4-roller_5"/>
+    <exclude name="exclude_w4-roller_1_w4-roller_6" body1="w4-roller_1" body2="w4-roller_6"/>
+    <exclude name="exclude_w4-roller_1_w4-roller_7" body1="w4-roller_1" body2="w4-roller_7"/>
     <exclude name="exclude_w4-roller_2_w4-roller_3" body1="w4-roller_2" body2="w4-roller_3"/>
     <exclude name="exclude_w4-roller_2_w4-roller_4" body1="w4-roller_2" body2="w4-roller_4"/>
     <exclude name="exclude_w4-roller_2_w4-roller_5" body1="w4-roller_2" body2="w4-roller_5"/>
@@ -365,7 +369,7 @@
     <exclude name="exclude_w4-roller_4_w4-roller_5" body1="w4-roller_4" body2="w4-roller_5"/>
     <exclude name="exclude_w4-roller_4_w4-roller_6" body1="w4-roller_4" body2="w4-roller_6"/>
     <exclude name="exclude_w4-roller_4_w4-roller_7" body1="w4-roller_4" body2="w4-roller_7"/>
-    <exclude name="exclude_w4-roller_6_w4-roller_5" body1="w4-roller_5" body2="w4-roller_6"/>
+    <exclude name="exclude_w4-roller_5_w4-roller_6" body1="w4-roller_5" body2="w4-roller_6"/>
     <exclude name="exclude_w4-roller_5_w4-roller_7" body1="w4-roller_5" body2="w4-roller_7"/>
     <exclude name="exclude_w4-roller_6_w4-roller_7" body1="w4-roller_6" body2="w4-roller_7"/>
   </contact>

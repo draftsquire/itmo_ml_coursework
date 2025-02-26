@@ -173,7 +173,7 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
         else:
             T = True
             steps_left = 10000 - step
-            R_T = -steps_left
+            R_T = -steps_left * 0.01
 
         return T, R_T
 

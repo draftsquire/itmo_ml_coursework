@@ -117,9 +117,9 @@ if __name__ == '__main__':
         max_episode_steps=MAX_EPISODE_STEPS,
         reward_threshold=6000,
     )
-    env_boudary_radius = 10.
-    coords = generate_coordinates(10)
-    env = gym.make('Mecanum-v0', render_mode='human', coordinates=coords, max_steps=MAX_EPISODE_STEPS, camera_config=CAMERA_CONFIG, environment_boundary_radius=env_boudary_radius)
+    env_boudary_radius = 3.
+    coords = generate_coordinates(100, x_range=(-1, 1), y_range=(-1, 1))
+    env = gym.make('Mecanum-v0', coordinates=coords, max_steps=MAX_EPISODE_STEPS, camera_config=CAMERA_CONFIG, environment_boundary_radius=env_boudary_radius)
     observation, info = env.reset()
     print('Space shapes', env.observation_space.shape, env.action_space.shape)
 
@@ -188,7 +188,7 @@ if __name__ == '__main__':
                 done = (terminated or truncated)
                 memory.push(state, action, next_state, reward, float(done))
                 sum_reward += reward
-
+                
                 if (steps_done < LEARNING_STARTS) or (len(memory) < batch_size):
                     if done:
                         print("sum_reward: " + str(sum_reward))
@@ -197,7 +197,8 @@ if __name__ == '__main__':
                         state = next_state  # Ensure to update state even when not learning
                         continue
                 else:
-                    training_started = True            
+                    training_started = True
+                     
                 states, actions, rewards, next_states, dones = memory.sample(batch_size)
                 states = states.to(device)
                 actions = actions.to(device)
