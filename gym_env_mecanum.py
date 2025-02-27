@@ -75,7 +75,7 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
         ],
         "render_fps": 125,
     }
-    DEFAULT_MAX_STEPS=10000
+    DEFAULT_MAX_STEPS=1500
     def __init__(
         self,
         coordinates, # Used for starting and target points
@@ -172,8 +172,8 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
             R_T = (R1 + R2) * (1 - e_phi_norm)
         else:
             T = True
-            steps_left = 10000 - step
-            R_T = -steps_left * 0.01
+            steps_left = self._max_steps - step
+            R_T = -steps_left 
 
         return T, R_T
 
@@ -223,8 +223,10 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
 
         qpos[2] = self.init_qpos[2] # Z-coordinate remains zero (likely)
 
-        self._x_target = self._coordinates[n - 1 - coordinates_index][0]
-        self._y_target = self._coordinates[n - 1 - coordinates_index][1]
+        self._x_target = 0
+        self._y_target = 0
+        # self._x_target = self._coordinates[n - 1 - coordinates_index][0]
+        # self._y_target = self._coordinates[n - 1 - coordinates_index][1]
 
         qvel = self.init_qvel
         self.set_state(qpos, qvel)

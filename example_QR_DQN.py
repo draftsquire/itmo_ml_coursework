@@ -107,10 +107,11 @@ if __name__ == '__main__':
         "elevation": -50.0,
     }
 
+    MAX_EPISODE_STEPS = 400 #Depends highly on simulation parameters and boundary radius
+    MAX_LEARNING_STEPS = 600000
+    EPISODES_MAX = int(MAX_LEARNING_STEPS / MAX_EPISODE_STEPS)
 
-    EPISODES_MAX = 1500
-    MAX_EPISODE_STEPS = 10000
-    MAX_LEARNING_STEPS = 15000000
+
     register(
         id="Mecanum-v0",
         entry_point="gym_env_mecanum:MecanumEnv",
@@ -119,7 +120,7 @@ if __name__ == '__main__':
     )
     env_boudary_radius = 3.
     coords = generate_coordinates(100, x_range=(-1, 1), y_range=(-1, 1))
-    env = gym.make('Mecanum-v0', coordinates=coords, max_steps=MAX_EPISODE_STEPS, camera_config=CAMERA_CONFIG, environment_boundary_radius=env_boudary_radius)
+    env = gym.make('Mecanum-v0',render_mode="human", coordinates=coords, max_steps=MAX_EPISODE_STEPS, camera_config=CAMERA_CONFIG, environment_boundary_radius=env_boudary_radius)
     observation, info = env.reset()
     print('Space shapes', env.observation_space.shape, env.action_space.shape)
 
@@ -166,20 +167,19 @@ if __name__ == '__main__':
 
     Z = DQN_QR(len_state=n_states, num_quant=110, num_actions=n_actions, hidden_dim=256)
     Ztgt = DQN_QR(len_state=n_states, num_quant=110, num_actions=n_actions, hidden_dim=256)
-    optimizer = torch.optim.Adam(Z.parameters(), 1e-3) #5-e5
+    optimizer = torch.optim.Adam(Z.parameters(), 5e-4) #1e-3
     running_reward=None
     steps_done = 0
     gamma, batch_size = 0.99, 512
     tau = torch.Tensor((2 * np.arange(Z.num_quant) + 1) / (2.0 * Z.num_quant)).view(1, -1)
-    LEARNING_STARTS = 2e+5
+    # LEARNING_STARTS = 2e+5
+    LEARNING_STARTS = (200000 / 10000) * MAX_EPISODE_STEPS #Saving the proportion from paper, but changing the value according to the actual episode steps
     training_started = False
     for episode in range(EPISODES_MAX): 
         # print("episode #" + str(episode))
         sum_reward = 0
         state, _info = env.reset()
         steps_local = 0
-        if episode % 1000 == 0:
-            print(str(episode) + " " + str(steps_done))
         while True:
                 steps_done += 1
                 steps_local += 1
@@ -191,7 +191,9 @@ if __name__ == '__main__':
                 
                 if (steps_done < LEARNING_STARTS) or (len(memory) < batch_size):
                     if done:
-                        print("sum_reward: " + str(sum_reward))
+                        # print("sum_reward: %.3f episode steps: %d" % (sum_reward, steps_local))
+                        logger.add(episode, steps_total=steps_done, steps_local=steps_local, running_reward=sum_reward, loss="NaN")
+                        logger.iter_info()
                         break
                     else:
                         state = next_state  # Ensure to update state even when not learning
@@ -225,7 +227,7 @@ if __name__ == '__main__':
                     Ztgt.load_state_dict(Z.state_dict())
 
                 if done: #if done and episode % 50 == 0:
-                    logger.add(episode, steps=steps_local, running_reward=sum_reward, loss=loss.data.numpy())
+                    logger.add(episode, steps_total=steps_done, steps_local=steps_local, running_reward=sum_reward, loss=loss.data.numpy())
                     logger.iter_info()
 
                 if done:

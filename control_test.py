@@ -68,7 +68,7 @@ if __name__ == '__main__':
 
 
     EPISODES_MAX = 1500
-    MAX_EPISODE_STEPS = 10000
+    MAX_EPISODE_STEPS = 350
     MAX_LEARNING_STEPS = 15000000
     register(
         id="Mecanum-v0",
@@ -78,7 +78,7 @@ if __name__ == '__main__':
     )
     env_boudary_radius = 3.
     # coords = generate_coordinates(10)
-    coords = np.array([(0, -1), (0, 1)])
+    coords = np.array([(-0.5, -0.5), (0, 0)])
     env = gym.make('Mecanum-v0', render_mode='human', coordinates=coords, max_steps=MAX_EPISODE_STEPS, camera_config=CAMERA_CONFIG, environment_boundary_radius=env_boudary_radius)
     observation, info = env.reset()
     print('Space shapes', env.observation_space.shape, env.action_space.shape)
@@ -117,21 +117,23 @@ if __name__ == '__main__':
     n_actions = len(action_space)
 
     # for action in action_space:
-    action = action_space[14]
+    action = action_space[15]
     episode_over = False
     i = 0
     print(action)
     traj = []
     while not episode_over:
+        action = action_space[torch.randint(0, 19, (1,))]
         # action = env.action_space.sample()  # agent policy that uses the observation and info
         # action = action_space[np.random.choice(action_space.shape[0])]
         # action = -1. * np.array([-0.5, -0.5, -0.5, -0.5])  # y positive, low speed
         observation, reward, terminated, truncated, info = env.step(action)
         x, y, v_x, v_y, omega_z, x_t, y_t, e_x, e_y, E_dist, e_phi_deg = observation
-        print("e_phi_deg:" + str(e_phi_deg))
+        print("reward:" + str(reward))
         traj.append([x ,y])
         i+=1
         episode_over = terminated or terminated
+    print("Total steps: " + str(i))    
     traj = np.array(traj)
     # Create figure
     plt.figure(figsize=(8, 6))
