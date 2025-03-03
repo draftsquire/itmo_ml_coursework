@@ -173,7 +173,7 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
         else:
             T = True
             steps_left = self._max_steps - step
-            R_T = -steps_left 
+            R_T = -steps_left
 
         return T, R_T
 
@@ -203,6 +203,13 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
         # print("rew: " + str(reward))
         return observation, reward, terminated, truncated, info
 
+    def set_target(self, current_coords,  target):
+        self._x_start, self._y_start = current_coords
+        x_t, y_t = target
+        self._x_target = x_t
+        self._y_target = y_t
+        return True
+
     def reset_model(self):
         """
         Generates new initial and target coordinates by running a uniform distributed number generating function which will
@@ -223,10 +230,10 @@ class MecanumEnv(MujocoEnv, utils.EzPickle):
 
         qpos[2] = self.init_qpos[2] # Z-coordinate remains zero (likely)
 
-        self._x_target = 0
-        self._y_target = 0
-        # self._x_target = self._coordinates[n - 1 - coordinates_index][0]
-        # self._y_target = self._coordinates[n - 1 - coordinates_index][1]
+        # self._x_target = 0
+        # self._y_target = 0
+        self._x_target = self._coordinates[n - 1 - coordinates_index][0]
+        self._y_target = self._coordinates[n - 1 - coordinates_index][1]
 
         qvel = self.init_qvel
         self.set_state(qpos, qvel)

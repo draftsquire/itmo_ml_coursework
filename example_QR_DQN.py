@@ -107,8 +107,8 @@ if __name__ == '__main__':
         "elevation": -50.0,
     }
 
-    MAX_EPISODE_STEPS = 400 #Depends highly on simulation parameters and boundary radius
-    MAX_LEARNING_STEPS = 600000
+    MAX_EPISODE_STEPS = 600 #Depends highly on simulation parameters and boundary radius
+    MAX_LEARNING_STEPS = 1600000
     EPISODES_MAX = int(MAX_LEARNING_STEPS / MAX_EPISODE_STEPS)
 
 
@@ -119,8 +119,8 @@ if __name__ == '__main__':
         reward_threshold=6000,
     )
     env_boudary_radius = 3.
-    coords = generate_coordinates(100, x_range=(-1, 1), y_range=(-1, 1))
-    env = gym.make('Mecanum-v0',render_mode="human", coordinates=coords, max_steps=MAX_EPISODE_STEPS, camera_config=CAMERA_CONFIG, environment_boundary_radius=env_boudary_radius)
+    coords = generate_coordinates(1000, x_range=(-1, 1), y_range=(-1, 1))
+    env = gym.make('Mecanum-v0', coordinates=coords, max_steps=MAX_EPISODE_STEPS, camera_config=CAMERA_CONFIG, environment_boundary_radius=env_boudary_radius)
     observation, info = env.reset()
     print('Space shapes', env.observation_space.shape, env.action_space.shape)
 
@@ -149,7 +149,7 @@ if __name__ == '__main__':
     ])
         # Swap the last two columns. In the article, first two columns stand for RF and LF wheels,
     #  but in our model it's vice-versa
-    action_space = action_space*2
+    action_space = action_space
     action_space[:, [2, 3]] = action_space[:, [3, 2]]
     action_space = -1. * action_space 
 
@@ -235,6 +235,12 @@ if __name__ == '__main__':
 
         if steps_done >= MAX_LEARNING_STEPS: # As in Paper
             break
+
+        if episode % 20 == 0:
+            torch.save({
+                      'model_state_dict': Z.state_dict(),
+                      'optimizer_state_dict': optimizer.state_dict(),
+                      }, 'dqn_checkpoint.pth')
     env.close()                
                 
 
