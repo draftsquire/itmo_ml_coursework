@@ -223,11 +223,11 @@ if __name__ == '__main__':
     plt.plot(traj[:, 0], traj[:, 1], linestyle='-', color='blue', marker='o', markersize=1, alpha=0.7, label="Robot's Path")
     # Highlight the last coordinate
     plt.scatter(x_s, y_s, color='green', edgecolors='black', s=100, label="Start Point", zorder=3)
-    plt.plot(coordinates[:, 0], coordinates[:, 1], linestyle='--', color='black', marker='o', markersize=2, alpha=0.7, label="Target Path")
+    coordinates[[0, 1]] = coordinates[[1, 0]]
+    plt.plot(coordinates[:, 0], coordinates[:, 1], linestyle='--', color='red', marker='o', markersize=3, alpha=0.7, label="Target Path")
     # Labels and title
     plt.xlabel("X Coordinate")
     plt.ylabel("Y Coordinate")
-    plt.title("Trajectory Plot with Last Point Highlighted")
     plt.grid(True)
     plt.axhline(0, color='black', linewidth=0.8)  # X-axis reference line
     plt.axvline(0, color='black', linewidth=0.8)  # Y-axis reference line
